@@ -32,8 +32,10 @@ var events = require('events');
 
 require.paths.unshift('./');
 var mongo = require('mongodb/db');
+process.mixin(mongo, require('mongodb/connection'));
 
 var port = 80;
+var db_port = 9001;
 var host = 'fyorl';
 
 // Could probably get this from looking at the HTTP header 'Accept'
@@ -45,6 +47,10 @@ var mimeLookup = {
 	'png': 'image/png',
 	'gif': 'image/gif'
 };
+
+// Sessions using mongoDB
+var db = new mongo.Db('music-server', new mongo.Server(host, db_port, {}), {});
+var userData = {};
 
 http.createServer(function (req, res) {
 	var url = req.url.split('/');
@@ -80,40 +86,73 @@ http.createServer(function (req, res) {
 		}
 	};
 	
-	var self = this;
-	
-	if (file === '') {
-		var filepath = '.' + path + '/index.js';
-		if (fileExists(filepath)) {
-			waiting = true;
-			include(filepath, self);
-		} else {
-			statusCode = 404;
-		}
-	} else {
-		var args = file.split('?');
-		file = args[0];
-		args = args[1];
-		var filepath = '.' + path + '/' + file;
-		if (fileExists(filepath)) {
-			var extension = file.split('.').last();
-			if (mimeLookup[extension]) {
-				contentType = mimeLookup[extension];
-				dump = filepath;
-			} else if (extension === 'js') {
+	this.processUrl = function () {
+		if (file === '') {
+			var filepath = '.' + path + '/index.js';
+			if (fileExists(filepath)) {
 				waiting = true;
 				include(filepath, self);
-			} else  {
-				contentType = 'text/plain';
+			} else {
+				statusCode = 404;
 			}
 		} else {
-			statusCode = 404;
+			var args = file.split('?');
+			file = args[0];
+			args = args[1];
+			var filepath = '.' + path + '/' + file;
+			if (fileExists(filepath)) {
+				var extension = file.split('.').last();
+				if (mimeLookup[extension]) {
+					contentType = mimeLookup[extension];
+					dump = filepath;
+				} else if (extension === 'js') {
+					waiting = true;
+					include(filepath, self);
+				} else  {
+					contentType = 'text/plain';
+				}
+			} else {
+				statusCode = 404;
+			}
+		}
+
+		res.sendHeader(statusCode, {'Content-Type': contentType});
+		if (!waiting) {
+			self.writeOutput();
 		}
 	}
-
-	res.sendHeader(statusCode, {'Content-Type': contentType});
-	if (!waiting) {
-		this.writeOutput();
+	
+	var self = this;
+	
+	if(req.headers.cookie) {
+		var found_sessid = false;
+		req.headers.cookie.split('; ').forEach(function (cookie) {
+			var keyVal = cookie.split('=');
+			if (keyVal[0] === 'SESSID') {
+				db.sessions(function (tbl) {
+					tbl.find(function (rows) {
+						found_sessid = true;
+						var username = '';
+						rows.each(function (row) {
+							username = row['username'];
+						});
+						if (username !== '') {
+							userData = {
+								'sessid': keyVal[1],
+								'username': username
+							};
+						}
+						self.processUrl();
+					}, {'sessid': keyVal[1]});
+				}, 'sessid');
+			}
+		});
+		
+		if (!found_sessid) {
+			self.processUrl();
+		}
+	} else {	
+		self.processUrl();
 	}
 }).listen(port, host);
 sys.puts('Server running at http://' + host + ':' + port + '/');
