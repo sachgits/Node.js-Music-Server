@@ -3,6 +3,7 @@ mainFunc = 'mainIndex';
 function mainIndex (obj) {
 	var self = this;
 	var prefix = '';
+	var title = 'Music Server: Home';
 	self.html = '';
 	
 	var buttons = '';

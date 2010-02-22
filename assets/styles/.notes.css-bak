@@ -96,13 +96,68 @@ body {
 	background: white;
 }
 
+#wrapper .container.contained .content.error {
+	background: #FFEDEF;
+	border: 10px solid #FFC2CA;
+	color: #C00;
+}
+
+#wrapper .container.contained .content.error {
+	background: #E2F9E3;
+	border: 10px solid #9C9;
+	color: #060;
+}
+
 .content h2 {
 	background: transparent;
-	padding: 0;
 	margin: 0;
 	font-family: Georgia;
 	color: #C17878;
 	padding: 20px;
+	font-weight: normal;
+	font-size: 24px;
+}
+
+.content p {
+	border-top: 1px solid #ededed;
+	padding: 20px;
+	margin: 0;
+	font-family: Georgia;
+	font-size: 18px;
+}
+
+.content.error p,
+.content.success p{
+	border: none;
+}
+
+.content p label {
+	margin-right: 20px;
+	width: 150px;
+	display: inline-block;
+}
+
+.content p.submit {
+	text-align: center;
+}
+
+input.biginput {
+	border: 1px solid #ccc;
+	width: 600px;
+	font-size: 18px;
+	font-family: Georgia;
+	padding: 5px;
+	color: #999;
+}
+
+input.bigbutton {
+	font-size: 18px;
+	font-family: Georgia;
+	width: 100px;
+	display: inline-block;
+	padding: 5px;
+	border: 1px solid #ccc;
+	background: #EEE url('../images/gradient-bottom.png') repeat-x scroll left bottom;
 }
 
 #footer {
