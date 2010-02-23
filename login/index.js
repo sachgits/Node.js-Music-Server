@@ -57,16 +57,14 @@ function loginMainIndex (obj) {
 		var uid = -1;
 		db.open(function (db) {
 			db.collection(function (tbl) {
-				tbl.find(function (rows) {
-					rows.each(function (row) {
-						if (row !== null) {
-							uid = row['UserID'];
-							userData = {
-								'UserID': uid,
-								'username': row['username']
-							};
-						}
-					});
+				tbl.findOne(function (row) {
+					if (row !== undefined && row !== null) {
+						uid = row['UserID'];
+						obj.userData = {
+							'UserID': uid,
+							'username': row['username']
+						};
+					}
 					
 					if (uid < 0) {
 						self.generateOutput('Invalid username or password.');

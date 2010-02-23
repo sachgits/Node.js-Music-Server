@@ -7,7 +7,7 @@ buttons += ' \
 	<div><a href="' + prefix + 'register/">Register</a></div> \
 ';
 
-if (userData.username) {
+if (obj.userData.username) {
 	buttons = ' \
 		<div class="first"><a href="/">Home</a></div> \
 		<div><a href="' + prefix + 'youtube/">Youtube</a></div> \

@@ -1,15 +1,13 @@
 #!/usr/local/bin/node
+
+/**
+ * Disclaimer: Now that I know how to use Node.js better, I shall rewrite this all to be
+ * less paedophilic at some point in the future.
+ * ~Fyorl
+ */
+
 Array.prototype.last = function () {
 	return this[this.length - 1];
-}
-
-function fileExists(path) {
-	var exists = true;
-	fs.stat(path).addErrback(function () {
-		exists = false;
-	});
-	
-	return exists;
 }
 
 var mainFunc;
@@ -60,112 +58,123 @@ var mimeLookup = {
 
 // Sessions using mongoDB
 var db = new mongo.Db('music-server', new mongo.Server(host, db_port, {}), {});
-var userData = {};
 
 http.createServer(function (req, res) {
-	var self = this;
+	var self = {};
 
 	var url = req.url.split('/');
 	var file = url.last();
 	var path = url.slice(0, url.length - 1).join('/');
-	var contentType = 'text/html';
-	var statusCode = 200;
-	var dump = false;
-	var waiting = false;
 	
-	this.req = req;
-	this.res = res;
-	this.data = '';
-	this.redirect = false;
+	self.dump = false;
+	self.contentType = 'text/html';
+	self.waiting = false;
+	self.statusCode = 200;
+	self.req = req;
+	self.res = res;
+	self.data = '';
+	self.redirect = false;
+	self.userData = {};
 	
-	this.writeOutput = function () {
+	self.writeOutput = function () {
 		for (var path in includes) {
 			res.write(includes[path].render());
 		}
 		
 		includes = {};
 		mainFunc = '';
-		waiting = false;
+		self.waiting = false;
 		
-		if (!dump) {
+		if (!self.dump) {
 			res.close();
 		} else {
 			var encoding = 'ascii';
-			if (contentType.split('/')[0] === 'image') {
+			if (self.contentType.split('/')[0] === 'image') {
 				encoding = 'binary';
 			}
 			
-			fs.readFile(dump, encoding).addCallback(function (content) {
+			fs.readFile(self.dump, encoding).addCallback(function (content) {
 				res.write(content, encoding);
-				dump = false;
+				self.dump = false;
 				res.close();
 			});
 		}
 	};
 	
-	this.processUrl = function () {
+	self.redirectHandle = function () {
+		if(self.redirect !== false) {
+			res.sendHeader(307, {'Location': self.redirect});
+			res.close();
+		}
+		
+		res.sendHeader(self.statusCode, {'Content-Type': self.contentType});
+		if (!self.waiting) {
+			self.writeOutput();
+		}
+	};
+	
+	self.processUrl = function () {
 		if (file === '' || !file.match(/\./)) {
 			var filepath = './' + path + file + '/index.js';
-			if (fileExists(filepath)) {
-				waiting = true;
+			var fd = fs.stat(filepath);
+			
+			fd.addCallback(function (stats) {
+				self.waiting = true;
 				include(filepath, self);
-			} else {
-				statusCode = 404;
-			}
+				self.redirectHandle();
+			});
+			
+			fd.addErrback(function () {
+				self.statusCode = 404;
+				self.redirectHandle();
+			});
 		} else {
 			var args = file.split('?');
 			file = args[0];
 			args = args[1];
 			var filepath = '.' + path + '/' + file;
-			if (fileExists(filepath)) {
+			var fd = fs.stat(filepath);
+			
+			fd.addCallback(function (stats) {
 				var extension = file.split('.').last();
 				if (mimeLookup[extension]) {
-					contentType = mimeLookup[extension];
-					dump = filepath;
+					this.contentType = mimeLookup[extension];
+					this.dump = filepath;
 				} else if (extension === 'js') {
-					waiting = true;
+					this.waiting = true;
 					include(filepath, self);
 				} else  {
-					contentType = 'text/plain';
+					this.contentType = 'text/plain';
 				}
-			} else {
-				statusCode = 404;
-			}
+				
+				this.redirectHandle();
+			}.call(self));
+			
+			fd.addErrback(function () {
+				self.statusCode = 404;
+				self.redirectHandle();
+			});
 		}
-		
-		if(self.redirect !== false) {
-			res.sendHeader(307, {'Location': self.redirect});
-			res.close();
-		}
-
-		res.sendHeader(statusCode, {'Content-Type': contentType});
-		if (!waiting) {
-			self.writeOutput();
-		}
-	}
+	};
 	
-	this.parseCookies = function () {
+	self.parseCookies = function () {
 		if(req.headers.cookie) {
 			var found_uid = false;
 			req.headers.cookie.split('; ').forEach(function (cookie) {
 				var keyVal = cookie.split('=');
 				if (keyVal[0] === 'UserID') {
-					db.users(function (tbl) {
-						tbl.find(function (rows) {
-							found_uid = true;
-							var username = '';
-							rows.each(function (row) {
-								if (row !== null) username = row['username'];
-							});
-							if (username !== '') {
-								userData = {
-									'UserID': keyVal[1],
-									'username': username
-								};
-							}
+					db.collection(function (tbl) {
+						tbl.findOne(function (row) {
+							found_uid = (row === undefined || row === null) ? false : true;
+							if (!found_uid) return;
+							
+							self.userData = {
+								'UserID': keyVal[1],
+								'username': row['username']
+							};
 							self.processUrl();
 						}, {'UserID': keyVal[1]});
-					}, 'UserID');
+					}, 'users');
 				}
 			});
 			
@@ -175,7 +184,7 @@ http.createServer(function (req, res) {
 		} else {	
 			self.processUrl();
 		}
-	}
+	};
 	
 	if(req.method === 'POST') {
 		req.addListener('data', function (chunk) {
@@ -186,7 +195,7 @@ http.createServer(function (req, res) {
 			self.parseCookies();
 		});
 	} else {
-		this.parseCookies();
+		self.parseCookies();
 	}
 }).listen(port, host);
 sys.puts('Server running at http://' + host + ':' + port + '/');

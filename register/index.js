@@ -71,31 +71,30 @@ function registerMainIndex (obj) {
 			var found = false;
 			db.open(function (db) {
 				db.collection(function (tbl) {
-					tbl.find(function (rows) {
-						rows.each(function (row) {
-							if (row !== null) found = true;
-						});
+					tbl.findOne(function (row) {
+						if (row !== null && row !== undefined) found = true;
 						
-						var maxID = -1;
-						tbl.find(function (rows) {
-							rows.each(function (row) {
-								if (row !== null) {
-									if (row['UserID'] > maxID) maxID = row['UserID'];
-								}
-							});
-							
-							maxID++;
-							if (found) {
-								self.generateOutput('Username already taken.');
-							} else {
-								tbl.insert({
-									'UserID': maxID,
-									'username': params['username'].toLowerCase(),
-									'password': pwHash(params['password'])
+						if (found) {
+							self.generateOutput('Username already taken.');
+						} else {
+							var maxID = -1;
+							tbl.find(function (rows) {
+								rows.each(function (row) {
+									if (row !== null && row !== undefined) {
+										if (row['UserID'] > maxID) maxID = row['UserID'];
+									}
 								});
-								self.generateOutput(false, 'Registered successfully, go to the login page.');
-							}
-						});
+								
+								maxID++;
+							});
+						
+							tbl.insert({
+								'UserID': maxID,
+								'username': params['username'].toLowerCase(),
+								'password': pwHash(params['password'])
+							});
+							self.generateOutput(false, 'Registered successfully, go to the login page.');
+						}
 					}, {'username': params['username'].toLowerCase()});
 				}, 'users');
 			});
