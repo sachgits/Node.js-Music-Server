@@ -18,7 +18,8 @@ var b64pad  = "";  /* base-64 pad character. "=" for strict RFC compliance   */
  * These are the functions you'll usually want to call
  * They take string arguments and return either hex or base-64 encoded strings
  */
-MD5 = function() {}
+var MD5 = exports.MD5 = function() {};
+
 MD5.hex_md5 = function(s)    { return MD5.rstr2hex(MD5.rstr_md5(MD5.str2rstr_utf8(s))); }
 MD5.b64_md5 = function(s)    { return MD5.rstr2b64(MD5.rstr_md5(MD5.str2rstr_utf8(s))); }
 MD5.any_md5 = function(s, e) { return MD5.rstr2any(MD5.rstr_md5(MD5.str2rstr_utf8(s)), e); }
@@ -49,8 +50,8 @@ MD5.rstr_hmac_md5 = function(key, data) {
     opad[i] = bkey[i] ^ 0x5C5C5C5C;
   }
 
-  var hash = MD5.binl_md5(ipad.concat(rstr2binl(data)), 512 + data.length * 8);
-  return MD5.binl2rstr(binl_md5(opad.concat(hash), 512 + 128));
+  var hash = MD5.binl_md5(ipad.concat(MD5.rstr2binl(data)), 512 + data.length * 8);
+  return MD5.binl2rstr(MD5.binl_md5(opad.concat(hash), 512 + 128));
 }
 
 /*

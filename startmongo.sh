@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo mongod --fork --logpath /var/log/mongodb.log --logappend
+sudo /home/fyorl/local/bin/mongod --fork --logpath /var/log/mongodb.log --logappend

@@ -1,95 +1,93 @@
-var mongo = require('mongodb/bson/bson');
-process.mixin(mongo, require('mongodb/bson/collections'));
-process.mixin(mongo, require('mongodb/bson/binary_parser'));
+var BinaryParser = require('../bson/binary_parser').BinaryParser,
+  OrderedHash = require('../bson/collections').OrderedHash,
+  BSON = require('../bson/bson'),
+  ObjectID = BSON.ObjectID,
+  Binary = BSON.Binary;
 
-sys = require("sys");
+var Chunk = exports.Chunk = function(file, mongoObject) {
+  this.file = file;
+  var mongoObjectFinal = mongoObject == null ? new OrderedHash() : mongoObject;
+  this.objectId = mongoObjectFinal._id == null ? new ObjectID() : mongoObjectFinal._id;
+  this.chunkNumber = mongoObjectFinal.n == null ? 0 : mongoObjectFinal.n;
+  this.data = new Binary();
 
-exports.Chunk = Class({
-  init: function(file, mongoObject) {  
-    this.file = file;
-    var mongoObjectFinal = mongoObject == null ? new mongo.OrderedHash() : mongoObject;  
-    this.objectId = mongoObjectFinal._id == null ? new mongo.ObjectID() : mongoObjectFinal._id;
-    this.chunkNumber = mongoObjectFinal.n == null ? 0 : mongoObjectFinal.n;
-    this.data = new mongo.Binary();
-    this.className = "Chunk";    
-
-    if(mongoObjectFinal.data == null) {
-    } else if(mongoObjectFinal.data.constructor == String) {
-      var dataArray = [];
-      var string = mongoObjectFinal.data;
-      for(var i = 0; i < string.length; i++) { dataArray.push(mongo.BinaryParser.fromByte(string.charCodeAt(i)));}
-      this.data = new mongo.Binary(dataArray);
-    } else if(mongoObjectFinal.data.constructor == Array) {
-      this.data = new mongo.Binary(mongoObjectFinal.data);
-    } else if(mongoObjectFinal.data.className == "Binary") {
-      this.data = mongoObjectFinal.data;
-    } else {
-      throw Error("Illegal chunk format");    
-    }
-    // Update position
-    this.internalPosition = 0;
-    // Getters and Setters
-    this.__defineGetter__("position", function() { return this.internalPosition; });
-    this.__defineSetter__("position", function(value) { this.internalPosition = value; });      
-  },
-  
-  write: function(callback, data) {
-    this.data.write(data, this.internalPosition);
-    this.internalPosition = this.data.length() + 1;
-    callback(this);
-  },
-  
-  read: function(length) {
-    if(this.length() - this.internalPosition + 1 >= length) {
-      var data = this.data.read(this.internalPosition, length).join('');    
-      this.internalPosition = this.internalPosition + length;
-      return data;
-    } else {
-      return '';
-    }
-  },
-  
-  eof: function() {
-    return this.internalPosition == this.length() ? true : false;
-  },
-  
-  getc: function() {
-    return this.read(1);
-  },
-  
-  rewind: function() {
-    this.internalPeosition = 0;
-    this.data = new mongo.Binary();
-  },
-  
-  save: function(callback) {
-    var self = this;
-
-    self.file.chunkCollection(function(collection) {
-      collection.remove(function(collection) {
-        if(self.data.length() > 0) {
-          self.buildMongoObject(function(mongoObject) {
-            collection.insert(mongoObject, function(collection) {
-              callback(self);
-            }); 
-          });        
-        } else {
-          callback(self);
-        }
-      }, {'_id':self.objectId});
-    });
-  },
-  
-  buildMongoObject: function(callback) {
-    var mongoObject = {'_id': this.objectId,
-      'files_id': this.file.fileId,
-      'n': this.chunkNumber,
-      'data': this.data};    
-    callback(mongoObject);
-  },
-  
-  length: function() {
-    return this.data.length();
+  if(mongoObjectFinal.data == null) {
+  } else if(mongoObjectFinal.data.constructor == String) {
+    var dataArray = [];
+    var string = mongoObjectFinal.data;
+    for(var i = 0; i < string.length; i++) { dataArray.push(BinaryParser.fromByte(string.charCodeAt(i)));}
+    this.data = new Binary(dataArray);
+  } else if(mongoObjectFinal.data.constructor == Array) {
+    this.data = new Binary(mongoObjectFinal.data);
+  } else if(mongoObjectFinal.data instanceof Binary) {
+    this.data = mongoObjectFinal.data;
+  } else {
+    throw Error("Illegal chunk format");
   }
-})
-exports.Chunk.DEFAULT_CHUNK_SIZE = 1024 * 256;
+  // Update position
+  this.internalPosition = 0;
+  // Getters and Setters
+  this.__defineGetter__("position", function() { return this.internalPosition; });
+  this.__defineSetter__("position", function(value) { this.internalPosition = value; });
+};
+
+Chunk.prototype.write = function(data, callback) {
+  this.data.write(data, this.internalPosition);
+  this.internalPosition = this.data.length() + 1;
+  callback(null, this);
+};
+
+Chunk.prototype.read = function(length) {
+  if(this.length() - this.internalPosition + 1 >= length) {
+    var data = this.data.read(this.internalPosition, length).join('');
+    this.internalPosition = this.internalPosition + length;
+    return data;
+  } else {
+    return '';
+  }
+};
+
+Chunk.prototype.eof = function() {
+  return this.internalPosition == this.length() ? true : false;
+};
+
+Chunk.prototype.getc = function() {
+  return this.read(1);
+};
+
+Chunk.prototype.rewind = function() {
+  this.internalPeosition = 0;
+  this.data = new Binary();
+};
+
+Chunk.prototype.save = function(callback) {
+  var self = this;
+
+  self.file.chunkCollection(function(err, collection) {
+    collection.remove({'_id':self.objectId}, function(err, collection) {
+      if(self.data.length() > 0) {
+        self.buildMongoObject(function(mongoObject) {
+          collection.insert(mongoObject, function(collection) {
+            callback(null, self);
+          });
+        });
+      } else {
+        callback(null, self);
+      }
+    });
+  });
+};
+
+Chunk.prototype.buildMongoObject = function(callback) {
+  var mongoObject = {'_id': this.objectId,
+    'files_id': this.file.fileId,
+    'n': this.chunkNumber,
+    'data': this.data};
+  callback(mongoObject);
+};
+
+Chunk.prototype.length = function() {
+  return this.data.length();
+};
+
+Chunk.DEFAULT_CHUNK_SIZE = 1024 * 256;
