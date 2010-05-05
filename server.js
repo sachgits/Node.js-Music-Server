@@ -42,9 +42,9 @@ require.paths.unshift('./');
 var mongo = require('mongodb/db');
 process.mixin(mongo, require('mongodb/connection'));
 
-var port = 80;
+var port = 27018;
 var db_port = 27017;
-var host = 'fyorl';
+var host = 'localhost';
 
 // Could probably get this from looking at the HTTP header 'Accept'
 // field but too lazy right now
@@ -117,6 +117,7 @@ http.createServer(function (req, res) {
 		if (file === '' || !file.match(/\./)) {
 			var filepath = './' + path + file + '/index.js';
 			var fd = fs.stat(filepath);
+			sys.puts(sys.inspect(fs.stat));
 			
 			fd.addCallback(function (stats) {
 				self.waiting = true;
