@@ -8,7 +8,9 @@ if (process.argv.length < 3) var port = 80;
 else var port = parseInt(process.argv[2]);
 
 eval(fs.readFileSync('assets/js/mootools.js'));
+eval(fs.readFileSync('assets/js/template.js'));
 eval(fs.readFileSync('assets/js/extensions.js'));
+eval(fs.readFileSync('assets/js/utilities.js'));
 eval(fs.readFileSync('.htaccess.js'));
 
 var Server = new Class({
@@ -42,6 +44,7 @@ var Server = new Class({
 		this.res = res;
 		
 		var path = req.url.substring(1, req.url.length);
+		if (path === '') path = '.';
 		var stats = false;
 		
 		try {
@@ -65,7 +68,10 @@ var Server = new Class({
 			else this.notFound();
 		}
 		
-		if (!file) return;
+		if (!file) {
+			this.notFound();
+			return;
+		}
 		
 		var extension = file.split('.').getLast();
 		if (file.indexOf('.') < 0) extension = 'txt';
@@ -73,7 +79,6 @@ var Server = new Class({
 		var encoding = 'utf8';
 		
 		if (mime.split('/')[0] === 'image') encoding = 'binary';
-		
 		if (mime === 'text/javascript') eval(fs.readFileSync(file));
 		else this.chunkedOutput(file, mime, encoding);
 	},
