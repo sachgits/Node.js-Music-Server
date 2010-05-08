@@ -1,0 +1,6 @@
+Running the server:
+./startmongo.sh
+./startserver.sh [portname]
+
+If [portname] is omitted, it will default to port 80. If you want to use port 80, run the command through sudo first:
+sudo ./startserver.sh
