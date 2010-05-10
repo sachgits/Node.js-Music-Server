@@ -20,12 +20,13 @@ var Server = new Class({
 	DB: {},
 	GET: {},
 	POST: {},
+	SESSION: {},
 	successCode: 200,
 	headers: {'Content-Type': 'text/html'},
 	body: '',
 	
 	chunkedOutput: function(file, mime, encoding) {
-		this.res.writeHead(this.successCode, {'Content-Type': mime});
+		this.res.writeHead(this.successCode, $merge(this.headers, {'Content-Type': mime}));
 		var stream = fs.createReadStream(file, {'encoding': encoding});
 		
 		stream.addListener('data', function(data) {
@@ -96,6 +97,14 @@ var Server = new Class({
 		this.req = req;
 		this.res = res;
 		
+		if (this.req.headers.cookie) {
+			var ex = this.req.headers.cookie.split('; ');
+			ex.forEach(function(item) {
+				var keyval = item.split('=');
+				this.SESSION[keyval[0]] = keyval[1];
+			}.bind(this));
+		}
+		
 		this.GET = (req.url.indexOf('?') > -1) ? url.parse(req.url, true).query : {};
 		if (req.method === 'POST') {
 			this.req.setBodyEncoding('utf8');
@@ -120,18 +129,33 @@ var Server = new Class({
 	},
 	
 	sendHeaders: function() {
-		// Prematurely send headers
+		// Prematurely send headers (useful for redirects)
 		this.res.writeHead(this.successCode, this.headers);
 		this.res.end();
 	},
 	
+	setSessionVar: function(key, val) {
+		this.SESSION[key] = val;
+		this.writeSessionHeaders();
+	},
+	
+	startSession: function() {
+		this.writeSessionHeaders();
+	},
+	
 	writeResponse: function(wholeChunk) {
-		this.headers = $merge(this.headers, {
-			'Content-Length': this.body.length
-		});
+		this.headers = $merge(this.headers, {'Content-Length': this.body.length});
 		this.res.writeHead(this.successCode, this.headers);
 		if (wholeChunk) this.res.write(this.body);
 		this.res.end();
+	},
+	
+	writeSessionHeaders: function() {
+		var cookies = [];
+		for (var key in this.SESSION) {
+			cookies.push(key + '=' + this.SESSION[key] + '; expires=' + new Date(new Date().getTime() + 60 * 30 * 1000).toUTCString() + '; path=/');
+		}
+		this.headers['set-cookie'] = cookies.join("\r\nSet-Cookie: ");
 	}
 });
 
