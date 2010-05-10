@@ -1,5 +1,5 @@
 var tpl = new Template(this, 'assets/xhtml/default.html');
-Utilities.navbar(tpl);
+Utilities.navbar(this, tpl);
 tpl.replace('title', 'Music Server: Register');
 tpl.addScript('/assets/js/mootools-dom.js');
 tpl.addScript('/assets/js/register.js');
@@ -29,7 +29,7 @@ if (this.POST['username'] && this.POST['username'] !== '') {
 									if (item.id > id) id = item.id;
 								});
 								id++;
-								collection.insert({'username': username, 'password': SHA1(this.POST['password']), 'id': id});
+								collection.insert({'username': username, 'password': SHA1(this.POST['password']), 'id': id, 'verify': ''});
 								db.close();
 								Utilities.redirect(this, '/login?registered=true');
 							}.bind(this));

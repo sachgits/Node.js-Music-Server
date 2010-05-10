@@ -32,6 +32,13 @@ body {
 	padding: 0;
 }
 
+#submenu span {
+	color: #999;
+	font-family: Georgia;
+	margin-left: 20px;
+	margin-top: 6px;
+}
+
 #submenu-wrapper {
 	height: 36px;
 	display: block;

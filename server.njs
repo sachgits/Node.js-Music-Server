@@ -150,8 +150,9 @@ var Server = new Class({
 		this.res.end();
 	},
 	
-	writeSessionHeaders: function() {
+	writeSessionHeaders: function(del) {
 		var cookies = [];
+		var date = (del) ? new Date(new Date().getTime() - 100000).toUTCString() : new Date(new Date().getTime() + 60 * 30 * 1000).toUTCString();
 		for (var key in this.SESSION) {
 			cookies.push(key + '=' + this.SESSION[key] + '; expires=' + new Date(new Date().getTime() + 60 * 30 * 1000).toUTCString() + '; path=/');
 		}
