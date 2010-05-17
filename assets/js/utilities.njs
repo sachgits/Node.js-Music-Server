@@ -1,6 +1,17 @@
 var Utilities = {
-	checkLogin: function() {
-		
+	checkLogin: function(svr) {
+		svr.openDB();
+		svr.DB.open(function(err, db) {
+			db.collection('users', function(err, collection) {
+				collection.findOne({
+					'id': svr.SESSION['id'],
+					'verify': svr.SESSION['verify']
+				}, function(err, cursor) {
+					if (!cursor) this.redirect(svr, '/');
+					else return true;
+				}.bind(this));
+			}.bind(this));
+		}.bind(this));
 	},
 	
 	generateKey: function(len) {
@@ -25,10 +36,10 @@ var Utilities = {
 		if (!svr.SESSION['id']) {
 			btns += stock.substitute($merge(first, {'sub2': '/login/', 'sub3': 'Login'}));
 			btns += stock.substitute({'sub2': '/register/', 'sub3': 'Register'});
-			tpl.replace('login', '<span>' + svr.SESSION['username'].capitalize() + '</span>');
 		} else {
 			btns += stock.substitute($merge(first, {'sub2': '/youtube/', 'sub3': 'Youtube'}));
 			btns += stock.substitute({'sub2': '/logout/', 'sub3': 'Logout'});
+			tpl.replace('login', '<span>' + svr.SESSION['username'].capitalize() + '</span>');
 		}
 		
 		tpl.replace('buttons', btns);

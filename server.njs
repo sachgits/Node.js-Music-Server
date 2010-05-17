@@ -44,6 +44,13 @@ var Server = new Class({
 		else return path + '/' + concat;
 	},
 	
+	deleteSessionVars: function(keys) {
+		this.writeSessionHeaders(keys);
+		for (var i = 0; i < keys.length; i++) {
+			delete this.SESSION[keys[i]];
+		}
+	},
+	
 	handleRequest: function() {
 		var path = (this.req.url.charAt(0) === '/') ? this.req.url.substring(1, this.req.url.length) : this.req.url;
 		if (path.indexOf('?') > -1) path = url.parse(path).pathname;
@@ -151,10 +158,10 @@ var Server = new Class({
 	},
 	
 	writeSessionHeaders: function(del) {
+		if (!del) del = [];
 		var cookies = [];
-		var date = (del) ? new Date(new Date().getTime() - 100000).toUTCString() : new Date(new Date().getTime() + 60 * 30 * 1000).toUTCString();
 		for (var key in this.SESSION) {
-			cookies.push(key + '=' + this.SESSION[key] + '; expires=' + new Date(new Date().getTime() + 60 * 30 * 1000).toUTCString() + '; path=/');
+			cookies.push(key + '=' + this.SESSION[key] + '; expires=' + ((del.contains(key)) ? new Date(new Date().getTime() - 100000).toUTCString() : new Date(new Date().getTime() + 60 * 30 * 1000).toUTCString()) + '; path=/');
 		}
 		this.headers['set-cookie'] = cookies.join("\r\nSet-Cookie: ");
 	}

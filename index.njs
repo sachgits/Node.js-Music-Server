@@ -1,4 +1,6 @@
 var tpl = new Template(this, 'assets/xhtml/default.html');
-Utilities.navbar(tpl);
+Utilities.navbar(this, tpl);
 tpl.replace('title', 'Music Server: Home');
-tpl.output();
+if (this.SESSION['id']) {
+	
+} else tpl.output();
