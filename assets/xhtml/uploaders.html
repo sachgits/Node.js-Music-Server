@@ -1,0 +1,33 @@
+<div id="uploaders">
+	<div id="fileupload" class="songbox">
+		<h1>Upload</h1>
+		<form action="." method="post" enctype="multipart/form-data" name="fileupload" target="upload_target">
+			<div class="fileinputs">
+				<div class="filecontainer">
+					<input type="file" name="upload" />
+				</div>
+				<div class="fakefile">
+					<input name="fakefile" />
+					<input type="button" name="add" value="" />
+					<img src="/assets/images/loading_animation.gif" id="loadingAnimation" />
+				</div>
+			</div>
+		</form>
+	</div>
+	<div id="spotify" class="songbox">
+		<h1>Spotify</h1>
+		<form action="." method="post" name="spotify">
+			<input type="text" name="spotify" />
+			<input type="button" name="add" value="" />
+		</form>
+	</div>
+	<div id="youtube" class="songbox">
+		<h1>Youchoob</h1>
+		<form action="." method="post" name="youtube">
+			<input type="text" name="youtube" />
+			<input type="button" name="add" value="" />
+		</form>
+	</div>
+</div>
+
+<iframe id="upload_target" name="upload_target" src="#" style="display: none;"></iframe>
