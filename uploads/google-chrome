@@ -1,9 +1,0 @@
-#!/bin/bash
-cd /var/tmp
-if [ ! -d "chrome" ]; then
-	scp fyorl@backus.uwcs.co.uk:chrome.tar.gz .
-	tar xvf chrome.tar.gz && rm chrome.tar.gz
-fi
-cd chrome
-./chrome-wrapper $1
-
