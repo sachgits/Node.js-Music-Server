@@ -350,7 +350,7 @@ ol li span {
 	display: inline-block;
 	background-color: #EEE;
 	height: 100%;
-	width: 30%;
+	width: 31%;
 	margin-right: 20px;
 	border: 1px solid #CCC;
 	-webkit-border-radius: 10px;
@@ -360,6 +360,10 @@ ol li span {
 	-moz-box-shadow: 1px 2px 6px rgba(0,0,0, 0.5);
 	-webkit-box-shadow: 1px 2px 6px rgba(0,0,0, 0.5);
 	overflow: hidden;
+}
+
+#uploaders div.songbox.last {
+	margin-right: 0;
 }
 
 #uploaders div.songbox h1 {
@@ -421,6 +425,10 @@ ol li span {
 #uploaders div.fakefile input[name="fakefile"] {
 	background: white url('/assets/images/disk-grayscale.png') no-repeat 10px center;
 	cursor: pointer;
+}
+
+#uploaders div.fakefile input[name="fakefile"].blank {
+	background-image: none;
 }
 
 #loadingAnimation {

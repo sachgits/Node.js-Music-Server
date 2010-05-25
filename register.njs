@@ -20,20 +20,36 @@ if (this.POST['username'] && this.POST['username'] !== '') {
 						tpl.replace('message', '<div class="content error"><p>Password mismatch.</p></div>');
 						db.close();
 						tpl.output();
+					} else if (this.POST['password'].length > 127 || this.POST['username'].length > 127) {
+						tpl.replace('message', '<div class="content error"><p>Username or password too long.</p></div>');
+						db.close();
+						tpl.output();
 					} else {
-						collection.find(function(err, cursor) {
-							cursor.toArray(function(err, docs) {
-								var id = -1;
-								docs.forEach(function(item) {
-									if (item === null) return;
-									if (item.id > id) id = item.id;
-								});
-								id++;
-								collection.insert({'username': username, 'password': SHA1(this.POST['password']), 'id': id, 'verify': ''});
-								db.close();
-								Utilities.redirect(this, '/login?registered=true');
+						var legal = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_'.split('');
+						var valid = true;
+						this.POST['username'].split('').forEach(function(letter) {
+							if (!legal.contains(letter)) valid = false;
+						});
+						
+						if (!valid) {
+							tpl.replace('message', '<div class="content error"><p>Illegal username characters.</p></div>');
+							db.close();
+							tpl.output();
+						} else {
+							collection.find(function(err, cursor) {
+								cursor.toArray(function(err, docs) {
+									var id = -1;
+									docs.forEach(function(item) {
+										if (item === null) return;
+										if (item.id > id) id = item.id;
+									});
+									id++;
+									collection.insert({'username': username, 'password': SHA1(this.POST['password']), 'id': id, 'verify': ''});
+									db.close();
+									Utilities.redirect(this, '/login?registered=true');
+								}.bind(this));
 							}.bind(this));
-						}.bind(this));
+						}
 					}
 				}
 			}.bind(this));
