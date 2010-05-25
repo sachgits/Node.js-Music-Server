@@ -45,11 +45,14 @@ if (this.POST['upload']) {
 								'bid': bid,
 								'time': new Date().getTime()
 							});
+							
+							db.close();
+							tpl.replace('body', 'SUCCESS');
+							tpl.output();
 						});
 					});
 				}.bind(this));
 			}.bind(this));
-			tpl.replace('body', 'SUCCESS');
 		}
 	}
 } else {
