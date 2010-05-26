@@ -102,6 +102,9 @@ body {
 	border: 10px solid #ededed;
 	padding: 0px;
 	background: white;
+	border-radius: 10px;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
 }
 
 #wrapper .container.contained .content.error {
@@ -350,7 +353,7 @@ ol li span {
 	display: inline-block;
 	background-color: #EEE;
 	height: 100%;
-	width: 31%;
+	width: 31.3%;
 	margin-right: 20px;
 	border: 1px solid #CCC;
 	-webkit-border-radius: 10px;
@@ -386,7 +389,7 @@ ol li span {
 }
 
 #uploaders div.songbox div.filecontainer {
-	width: 90%;
+	width: 86%;
 	overflow: hidden;
 }
 
@@ -434,4 +437,45 @@ ol li span {
 #loadingAnimation {
 	display: none;
 	margin: 3px 0 0 4px;
+}
+
+div.bucket {
+	margin-top: 25px;
+	border-radius: 10px;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	width: 100%;
+	border: 1px solid #CCC;
+	background: #EEE url('../images/gradient-bottom.png') repeat-x scroll left bottom;
+}
+
+div.bucket div.song {
+	border-bottom: 1px solid #CCC;
+	padding: 10px;
+}
+
+div.bucket div.song.last {
+	border: none;
+}
+
+div.bucket div.song span.uname {
+	color: #999;
+	margin-right: 10px;
+	font-family: Georgia, serif;
+}
+
+div.bucket div.song span.fname {
+	color: #78ba91;
+}
+
+div.bucket div.song.first span.fname {
+	font-weight: bold;
+	color: #C17878;
+}
+
+div.bucket div.song img {
+	float: right;
+	margin-right: 10px;
+	margin-top: 5px;
+	cursor: pointer;
 }

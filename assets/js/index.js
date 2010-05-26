@@ -11,9 +11,9 @@ var mscUploader = {
 		
 		code = code.trim();
 		
-		if (code === 'SUCCESS') {
-			this.eraseError();
-		} else if (code === 'ERR_1') this.error('Illegal filetype.');
+		if (code === 'SUCCESS') location.reload(true);
+		else if (code === 'ERR_1') this.error('Illegal filetype.');
+		else if (code === 'ERR_2') this.error('No file specified.');
 		else this.error('Unknown return code.');
 		
 		$$('input[name="upload"]')[0].value = '';

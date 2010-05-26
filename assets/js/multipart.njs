@@ -9,7 +9,6 @@ var Multipart = new Class({
 			if (chunk.contains('filename')) {
 				var nm = '';
 				var file = '';
-				var chunks = chunk.split('; ');
 				headers.forEach(function(header) {
 					if (header.test(/^name/)) {
 						nm = header.split("=\"")[1];
@@ -25,7 +24,9 @@ var Multipart = new Class({
 					dat.splice(0, 1);
 					if (dat.length > 1) dat = dat.join("\r\n\r\n");
 					else dat = dat.join('');
-					dat = dat.substring(0, dat.length - 3);
+					var len = 4;
+					if (dat.test(/\n\r\n--$/)) len = 5;
+					dat = dat.substring(0, dat.length - len);
 				} else dat = '';
 				
 				this.obj[nm] = {

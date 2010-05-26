@@ -1,4 +1,27 @@
 var Utilities = {
+	bubbleSort: function(ar, property, order) {
+		if (!order || !['asc', 'desc'].contains(order)) order = 'asc';
+		for (var i = 0; i < ar.length - 1; i++) {
+			for (var j = i + 1; j < ar.length; j++) {
+				var val1 = property ? ar[j][property] : ar[j];
+				var val2 = property ? ar[i][property] : ar[i];
+				if (order === 'asc') {
+					if (val1 < val2) {
+						var dummy = ar[i];
+						ar[i] = ar[j];
+						ar[j] = dummy;
+					}
+				} else if (order === 'desc') {
+					if (val1 > val2) {
+						var dummy = ar[i];
+						ar[i] = ar[j];
+						ar[j] = dummy;
+					}
+				}
+			}
+		}
+	},
+	
 	checkLogin: function(svr) {
 		svr.openDB();
 		svr.DB.open(function(err, db) {
