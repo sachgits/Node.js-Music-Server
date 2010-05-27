@@ -3,6 +3,13 @@ var mscUploader = {
 		document.forms[0].submit();
 		el.setStyle('display', 'none');
 		$('loadingAnimation').setStyle('display', 'inline-block');
+		setTimeout('mscUploader.checkUploadStatus()', 2000);
+	},
+	
+	checkUploadStatus: function() {
+		var code = $('upload_target').contentDocument.activeElement.get('text').trim();
+		if (code === 'NOT_DONE') setTimeout('mscUploader.checkUploadStatus()', 2000);
+		else mscUploader.done(code);
 	},
 	
 	done: function(code) {
@@ -14,7 +21,9 @@ var mscUploader = {
 		if (code === 'SUCCESS') location.reload(true);
 		else if (code === 'ERR_1') this.error('Illegal filetype.');
 		else if (code === 'ERR_2') this.error('No file specified.');
-		else this.error('Unknown return code.');
+		else if (code === 'ERR_3') this.error('Your session has expired, please refresh and login again.');
+		else if (code !== 'NOT_DONE') this.error('Unknown return code.');
+		else return;
 		
 		$$('input[name="upload"]')[0].value = '';
 		$$('input[name="fakefile"]')[0].value = '';
@@ -57,6 +66,7 @@ window.addEvent('domready', function() {
 	}
 	
 	var fakefile = $$('#fileupload input[name="fakefile"]')[0];
+	fakefile.value = '';
 	$$('input[type="file"]')[0].addEvent('change', function() {
 		fakefile.addClass('blank');
 		fakefile.value = this.value;

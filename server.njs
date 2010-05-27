@@ -4,6 +4,7 @@ var fs = require('fs');
 var url = require('url');
 var querystring = require('querystring');
 var mongo = require('./mongodb');
+var formidable = require('./formidable');
 var db_port = mongo.Connection.DEFAULT_PORT;
 
 if (process.argv.length < 3) var port = 80;
@@ -165,7 +166,7 @@ var Server = new Class({
 		if (!del) del = [];
 		var cookies = [];
 		for (var key in this.SESSION) {
-			cookies.push(key + '=' + this.SESSION[key] + '; expires=' + ((del.contains(key)) ? new Date(new Date().getTime() - 100000).toUTCString() : new Date(new Date().getTime() + 60 * 30 * 1000).toUTCString()) + '; path=/');
+			cookies.push(key + '=' + this.SESSION[key] + '; expires=' + ((del.contains(key)) ? new Date(new Date().getTime() - 100000).toUTCString() : new Date(new Date().getTime() + 60 * 60 * 1000).toUTCString()) + '; path=/');
 		}
 		this.headers['set-cookie'] = cookies.join("\r\nSet-Cookie: ");
 	}

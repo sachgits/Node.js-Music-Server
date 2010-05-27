@@ -33,14 +33,15 @@ function getQueue(fn) {
 							if (doc === null) return;
 							var cls = 'song';
 							if (CONTAINER === '<div class="bucket">') cls += ' first';
-							if (!docs[k + 1] || docs[k + 1].bid !== currentBID) cls += ' last';
 							if (doc.bid !== currentBID) {
 								CONTAINER += '</div><div class="bucket">';
 								currentBID = doc.bid;
 							}
+							if (!docs[k + 1] || docs[k + 1].bid !== currentBID) cls += ' last';
 							CONTAINER += "<div class=\"" + cls + "\"><span class=\"uname\">" + doc.username.capitalize() + "</span><span class=\"fname\">" + doc.title + "</span>";
 							if (this.SESSION['id'] && this.SESSION['id'] === doc.uid) CONTAINER += '<img src="/assets/images/delete.png" alt="delete" title="Delete this track" />';
-							CONTAINER += '<img src="/assets/images/heart_delete.png" alt="dislike" title="Dislike this track" /></div>';
+							if (this.SESSION['id']) CONTAINER += '<img src="/assets/images/heart_delete.png" alt="dislike" title="Dislike this track" />';
+							CONTAINER += '</div>';
 						}.bind(this));
 						CONTAINER += '</div>';
 					}
@@ -56,7 +57,10 @@ if (this.POST['upload']) {
 	var tpl = new Template(this, 'assets/xhtml/blank.html');
 	tpl.addScript('/assets/js/index-aux.js');
 	
-	if (this.POST['upload']['filename'] !== '') {
+	if (!this.SESSION['id']) {
+		tpl.replace('body', 'ERR_3');
+		tpl.output();
+	} else if (this.POST['upload']['filename'] !== '') {
 		var fname = this.POST['upload']['filename'];
 		if (fname.substring(fname.length - 4, fname.length) === '.njs') {
 			tpl.replace('body', 'ERR_1');
@@ -104,6 +108,7 @@ if (this.POST['upload']) {
 								'time': new Date().getTime().toString()
 							});
 							
+							sys.puts('gets here');
 							tpl.replace('body', 'SUCCESS');
 							tpl.output();
 							db.close();
@@ -116,6 +121,11 @@ if (this.POST['upload']) {
 		tpl.replace('body', 'ERR_2');
 		tpl.output();
 	}
+} else if (this.GET['iframe']) {
+	var tpl = new Template(this, 'assets/xhtml/blank.html');
+	tpl.addScript('/assets/js/index-aux.js');
+	tpl.replace('body', 'NOT_DONE');
+	tpl.output();
 } else {
 	if (this.GET['ajax']) var fn = displayChunk;
 	else var fn = displayWhole;
