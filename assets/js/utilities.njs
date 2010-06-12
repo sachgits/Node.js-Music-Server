@@ -22,7 +22,7 @@ var Utilities = {
 		}
 	},
 	
-	checkLogin: function(svr) {
+	checkLogin: function(svr, cb) {
 		svr.openDB();
 		svr.DB.open(function(err, db) {
 			db.collection('users', function(err, collection) {
@@ -32,7 +32,7 @@ var Utilities = {
 				}, function(err, cursor) {
 					db.close();
 					if (!cursor) this.redirect(svr, '/');
-					else return true;
+					else cb();
 				}.bind(this));
 			}.bind(this));
 		}.bind(this));
@@ -61,7 +61,6 @@ var Utilities = {
 			btns += stock.substitute($merge(first, {'sub2': '/login/', 'sub3': 'Login'}));
 			btns += stock.substitute({'sub2': '/register/', 'sub3': 'Register'});
 		} else {
-			this.checkLogin(svr);
 			btns += stock.substitute($merge(first, {'sub2': '/youtube/', 'sub3': 'Youtube'}));
 			btns += stock.substitute({'sub2': '/logout/', 'sub3': 'Logout'});
 			tpl.replace('login', '<span>' + svr.SESSION['username'].capitalize() + '</span>');

@@ -15,7 +15,6 @@ eval(fs.readFileSync('assets/js/sha1.njs'));
 eval(fs.readFileSync('assets/js/template.njs'));
 eval(fs.readFileSync('assets/js/extensions.njs'));
 eval(fs.readFileSync('assets/js/utilities.njs'));
-eval(fs.readFileSync('assets/js/multipart.njs'));
 eval(fs.readFileSync('.htaccess.njs'));
 
 var Server = new Class({
@@ -115,19 +114,31 @@ var Server = new Class({
 		}
 		
 		this.GET = (req.url.indexOf('?') > -1) ? url.parse(req.url, true).query : {};
-		if (req.method === 'POST') {
+		if (req.method.toLowerCase() === 'post') {
 			var multipart = req.headers['content-type'].contains('multipart/form-data');
-			var encoding = multipart ? 'binary' : 'utf8';
-			this.req.setBodyEncoding(encoding);
-			var postData = '';
-			this.req.addListener('data', function(chunk) {
-				postData += chunk;
-			});
-			this.req.addListener('end', function() {
-				if (!multipart) this.POST = querystring.parse(postData);
-				else this.POST = new Multipart(postData, this.req.headers['content-type'].split('; ').getLast().split('=')[1]).parse();
-				this.handleRequest();
-			}.bind(this));
+			if (!multipart) {
+				var postData = '';
+				this.req.addListener('data', function(chunk) {
+					postData += chunk;
+				});
+				this.req.addListener('end', function() {
+					this.POST = querystring.parse(postData);
+					this.handleRequest();
+				}.bind(this));
+			} else {
+				var formParser = new formidable.IncomingForm();
+				formParser.uploadDir = 'processing';
+				formParser.addListener('field', function(nm, val) {
+					this.POST[nm] = val;
+				}.bind(this));
+				formParser.addListener('file', function(nm, file) {
+					this.POST[nm] = file;
+				}.bind(this));
+				formParser.addListener('end', function() {
+					this.handleRequest();
+				}.bind(this));
+				formParser.parse(this.req);
+			}
 		} else this.handleRequest();
 	},
 	

@@ -1,7 +1,7 @@
 <div id="uploaders">
 	<div id="fileupload" class="songbox">
 		<h1>Upload</h1>
-		<form action="." method="post" enctype="multipart/form-data" name="fileupload" target="upload_target">
+		<form action="/upload" method="post" enctype="multipart/form-data" name="fileupload" target="upload_target" id="fileupload_form">
 			<div class="fileinputs">
 				<div class="filecontainer">
 					<input type="file" name="upload" />
@@ -16,18 +16,16 @@
 	</div>
 	<div id="spotify" class="songbox">
 		<h1>Spotify</h1>
-		<form action="." method="post" name="spotify">
+		<form action="/spotify" method="post" name="spotify">
 			<input type="text" name="spotify" />
 			<input type="button" name="add" value="" />
 		</form>
 	</div>
 	<div id="youtube" class="songbox last">
 		<h1>Youchoob</h1>
-		<form action="." method="post" name="youtube">
+		<form action="/youtube_rip" method="post" name="youtube">
 			<input type="text" name="youtube" />
 			<input type="button" name="add" value="" />
 		</form>
 	</div>
 </div>
-
-<iframe id="upload_target" name="upload_target" src="/index.njs?iframe=true" style="display: none;"></iframe>
