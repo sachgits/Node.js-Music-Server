@@ -11,6 +11,26 @@ function displayWhole() {
 	Utilities.navbar(this, tpl);
 	tpl.replace('title', 'Music Server: Home');
 	tpl.replace('container', CONTAINER);
+	
+	if (this.GET['error']) {
+		var e = parseInt(this.GET['error']);
+		var errors = [
+			'Your session has expired, please log in again.',
+			'Blank file selected.',
+			'Illegal file type.'
+		];
+		var feedback = '';
+		var i = errors.length;
+		while (e > 0) {
+			i--;
+			if (e - Math.pow(2, i) < 0) continue;
+			e -= Math.pow(2, i);
+			feedback += '<div class="content error"><p>' + errors[i] + '</p></div>'
+		}
+		
+		tpl.replace('feedback', feedback);
+	}
+	
 	if (this.SESSION['id']) {
 		tpl.load('assets/xhtml/uploaders.html', 'message');
 		tpl.addScript('/assets/js/mootools-dom.js');
@@ -38,9 +58,10 @@ function getQueue(fn) {
 								currentBID = doc.bid;
 							}
 							if (!docs[k + 1] || docs[k + 1].bid !== currentBID) cls += ' last';
+							if (this.GET['success'] && this.GET['success'] == doc.id) cls += ' fadein';
 							CONTAINER += "<div class=\"" + cls + "\"><span class=\"uname\">" + doc.username.capitalize() + "</span><span class=\"fname\">" + doc.title + "</span>";
-							if (this.SESSION['id'] && this.SESSION['id'] === doc.uid) CONTAINER += '<img src="/assets/images/delete.png" alt="delete" title="Delete this track" />';
-							if (this.SESSION['id']) CONTAINER += '<img src="/assets/images/heart_delete.png" alt="dislike" title="Dislike this track" />';
+							if (this.SESSION['id'] && this.SESSION['id'] == doc.uid) CONTAINER += '<img src="/assets/images/delete.png" alt="delete" title="Delete this track" />';
+							if (this.SESSION['id']) CONTAINER += '<img src="/assets/images/thumb_down.png" alt="dislike" title="Dislike this track" />';
 							CONTAINER += '</div>';
 						}.bind(this));
 						CONTAINER += '</div>';

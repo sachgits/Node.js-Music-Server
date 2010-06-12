@@ -28,4 +28,8 @@ window.addEvent('domready', function() {
 			this.form.submit();
 		});
 	});
+	
+	$$('div.fadein').forEach(function(el) {
+		el.fade('in');
+	});
 });

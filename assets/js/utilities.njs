@@ -27,12 +27,14 @@ var Utilities = {
 		svr.DB.open(function(err, db) {
 			db.collection('users', function(err, collection) {
 				collection.findOne({
-					'id': svr.SESSION['id'],
+					'id': parseInt(svr.SESSION['id']),
 					'verify': svr.SESSION['verify']
 				}, function(err, cursor) {
 					db.close();
-					if (!cursor) this.redirect(svr, '/');
-					else cb();
+					if (!cursor) {
+						svr.destroySession();
+						this.redirect(svr, '/');
+					} else cb();
 				}.bind(this));
 			}.bind(this));
 		}.bind(this));
@@ -51,7 +53,7 @@ var Utilities = {
 		var btns = '';
 		var first = {};
 		
-		if (tpl.svr.req.url !== '/') {
+		if (tpl.svr.req.url !== '/' && tpl.svr.req.url.substring(0, 2) !== '/?') {
 			btns += stock.substitute({'sub1': ' class="first"', 'sub2': '/', 'sub3': 'Home'});
 		} else {
 			first = {'sub1': ' class="first"'};

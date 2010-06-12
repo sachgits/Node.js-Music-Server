@@ -52,9 +52,16 @@ var Server = new Class({
 		}
 	},
 	
+	destroySession: function() {
+		var keys = [];
+		for (var key in this.SESSION) keys.push(key);
+		this.deleteSessionVars(keys);
+	},
+	
 	handleRequest: function() {
-		var path = (this.req.url.charAt(0) === '/') ? this.req.url.substring(1, this.req.url.length) : this.req.url;
+		var path = this.req.url;
 		if (path.indexOf('?') > -1) path = url.parse(path).pathname;
+		if (path.charAt(0) === '/') path = path.substring(1, this.req.url.length);
 		if (path === '') path = '.';
 		var stats = false;
 		

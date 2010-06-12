@@ -1,2 +1,2 @@
-this.deleteSessionVars(['id', 'username', 'verify']);
+this.destroySession();
 Utilities.redirect(this, '/');
